@@ -1,0 +1,18 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: minecraft-pod
+spec:
+  containers:
+    - name: minecraft-container
+      image: openhack/minecraft-server:1.0
+      volumeMounts:
+      - mountPath: "/data"
+        name: volume
+      env:
+      - name: "EULA"
+        value: "TRUE"
+  volumes:
+    - name: volume
+      persistentVolumeClaim:
+        claimName: azurefile

@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: region-config
+  namespace: saopaulo-openhack
+data:
+  REGION_NAME: "East US"

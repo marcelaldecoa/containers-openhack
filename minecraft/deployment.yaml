@@ -1,0 +1,76 @@
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: azurefile
+provisioner: kubernetes.io/azure-file
+mountOptions:
+  - dir_mode=0777
+  - file_mode=0777
+  - uid=1000
+  - gid=1000
+parameters:
+  skuName: Standard_LRS
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: azurefile
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: azurefile
+  resources:
+    requests:
+      storage: 2Gi
+---
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: minecraft
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: minecraft
+    spec:
+      containers:
+        - name: minecraft
+          image: openhack/minecraft-server:1.0
+          volumeMounts:
+            - mountPath: "/data"
+              name: volume
+          ports:
+            - name: game
+              containerPort: 25565
+              protocol: TCP
+            - name: rcon
+              containerPort: 25575
+              protocol: TCP
+          env:
+            - name: "EULA"
+              value: "TRUE"
+      volumes:
+        - name: volume
+          persistentVolumeClaim:
+            claimName: azurefile
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: minecraft-pod
+spec:
+  ports:
+  - name: game
+    protocol: TCP
+    port: 25565
+    targetPort: 25565
+    nodePort: 30865
+  - name: rcon
+    protocol: TCP
+    port: 25575
+    targetPort: 25575
+    nodePort: 30875
+  selector:
+    run: minecraft
+  type: LoadBalancer

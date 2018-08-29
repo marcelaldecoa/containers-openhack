@@ -1,0 +1,3 @@
+http://maalde-openhack-saopaulo.trafficmanager.net/
+http://maalde-openhack-saopaulo.eastus.cloudapp.azure.com/
+http://maalde-openhack-saopaulo.westeurope.cloudapp.azure.com/

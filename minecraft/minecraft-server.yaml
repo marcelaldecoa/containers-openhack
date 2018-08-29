@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k8s-server
+spec:
+  selector:
+    matchLabels:
+      app: k8s-server
+  template:
+    metadata:
+      labels:
+        app: k8s-server
+    spec:
+      containers:
+      - name: k8s-server
+        image: openhack/minecraft-server:2.0
+        ports:
+        - containerPort: 25575
+          name: "rcon"
+        - containerPort: 25565
+          name: "game"
+        env:
+        - name: EULA
+          value: "TRUE"
+---
+
+kind: Service
+apiVersion: v1
+metadata:
+  name: minecraft-server
+spec:
+  type: LoadBalancer
+  selector:
+    app: k8s-server
+  ports:
+  - port: 25575
+    targetPort: 25575
+    name: "rcon"
+  - port: 25565
+    targetPort: 25565
+    name: "game"

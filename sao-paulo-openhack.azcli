@@ -1,0 +1,36 @@
+# Create the Resource Group
+az group create --name SaoPauloOpenHack --location eastus
+
+# Create a Azure Container Instance
+az container create -g SaoPauloOpenHack --name maalde-minecraft-server --image openhack/minecraft-server:1.0 --ports 25565 25575 -e "EULA=TRUE" --dns-name-label maalde-minecraft-server-aci
+
+# Create a Azure Container Registry
+az acr create -n SaoPauloOpenHackACR -g SaoPauloOpenHack -l eastus --sku Basic
+az acr list
+az acr login -n SaoPauloOpenHackACR
+az acr repository list -n SaoPauloOpenHackACR
+
+# Use MSI or Service Principal
+https://docs.microsoft.com/en-us/azure/active-directory/managed-service-identity/overview
+
+# Create a Service Principal
+az ad sp create-for-rbac --skip-assignment
+# -------------------------------------------------------------
+# AppId: 9bc8515b-acb4-4569-b32b-0cf40c170d9a  
+# DisplayName: azure-cli-2018-08-26-16-42-15
+# Name: http://azure-cli-2018-08-26-16-42-15  
+# Password: 50efac99-c574-4e28-b19c-922d3416fbd8
+# Tenant: 28eb5686-ea1d-4261-aade-3a58d7d74bee
+# -------------------------------------------------------------
+
+
+# Give Read Permission for ACR
+$acrId = az acr show --name SaoPauloOpenHackACR -g SaoPauloOpenHack --query "id" --output tsv
+az role assignment create --assignee "9bc8515b-acb4-4569-b32b-0cf40c170d9a" --role Reader --scope $acrId
+
+https://docs.microsoft.com/en-us/azure/aks/tutorial-kubernetes-deploy-cluster
+# Create a Azure Kubernetes Service in EastUS
+az aks create --name SaoPauloOpenHack-AKS-EastUS -g SaoPauloOpenHack --node-count 1 --generate-ssh-keys --service-principal "9bc8515b-acb4-4569-b32b-0cf40c170d9a" --client-secret "50efac99-c574-4e28-b19c-922d3416fbd8" --location eastus
+
+# Create a Azure Kubernetes Service WestEurope
+az aks create --name SaoPauloOpenHack-AKS-WestEurope -g SaoPauloOpenHack --node-count 1 --generate-ssh-keys --service-principal "9bc8515b-acb4-4569-b32b-0cf40c170d9a" --client-secret "50efac99-c574-4e28-b19c-922d3416fbd8" --location westeurope
